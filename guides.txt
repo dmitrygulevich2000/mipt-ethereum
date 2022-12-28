@@ -1,0 +1,2 @@
+https://codeforgeek.com/solidity-on-vs-code/
+https://docs.openzeppelin.com/learn/developing-smart-contracts
