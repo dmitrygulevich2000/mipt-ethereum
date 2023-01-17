@@ -2,7 +2,7 @@ pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
-contract Escrow is Initializable  {
+contract Escrow is Initializable {
     // Types and events
     enum State {
         Undefined,
@@ -22,7 +22,7 @@ contract Escrow is Initializable  {
     uint8 public constant freezeFeePercent = 2;
 
     // State variables. Check initialize() function to see initial values.
-    mapping (State => string) stateDescription;
+    mapping(State => string) stateDescription;
 
     address public buyer;
     address public seller;
@@ -38,16 +38,23 @@ contract Escrow is Initializable  {
         _disableInitializers();
     }
 
-    function initialize(address _buyer, address _seller, uint _costEther, string calldata _description) public initializer {
+    function initialize(
+        address _buyer,
+        address _seller,
+        uint _cost,
+        string calldata _description
+    ) public initializer {
         stateDescription[State.Created] = "deal created";
         stateDescription[State.Payed] = "deposit made";
-        stateDescription[State.DepositFrozen] = "seller confirmed delivery, deposit frozen";
+        stateDescription[
+            State.DepositFrozen
+        ] = "seller confirmed delivery, deposit frozen";
         stateDescription[State.Completed] = "deal completed";
         stateDescription[State.Cancelled] = "deal cancelled";
-        
+
         buyer = _buyer;
         seller = _seller;
-        cost = _costEther * 1 ether;
+        cost = _cost;
         description = _description;
 
         deposit = 0;
@@ -61,18 +68,18 @@ contract Escrow is Initializable  {
     }
 
     function depositRequired() public view returns (uint) {
-        return cost + cost * overpaymentPercent / 100;
+        return cost + (cost * overpaymentPercent) / 100;
     }
 
     function freezeFeeRequired() public view returns (uint) {
-        return cost * freezeFeePercent / 100;
+        return (cost * freezeFeePercent) / 100;
     }
 
     function pay() external payable {
         require(msg.sender == buyer, "not buyer");
         require(state == State.Created, "is not waiting for payment");
         require(msg.value >= depositRequired(), "not enough value sent");
-        
+
         deposit += msg.value;
         state = State.Payed;
         emit Payment(address(this));
@@ -89,16 +96,28 @@ contract Escrow is Initializable  {
 
     function complete() external {
         require(msg.sender == buyer, "not buyer");
-        require(state == State.Payed || state == State.DepositFrozen, "is not waiting for delivery");
+        require(
+            state == State.Payed || state == State.DepositFrozen,
+            "is not waiting for delivery"
+        );
 
-        state = State.Completed;  
+        state = State.Completed;
         returnOverpayment();
         emit Completion(address(this));
     }
 
     function cancel() external {
-        require(msg.sender == seller || (msg.sender == buyer && state != State.DepositFrozen), "not seller, not buyer, or deposit is frozen");
-        require(state == State.Created || state == State.Payed || state == State.DepositFrozen, "cannot cancel: improper state");
+        require(
+            msg.sender == seller ||
+                (msg.sender == buyer && state != State.DepositFrozen),
+            "not seller, not buyer, or deposit is frozen"
+        );
+        require(
+            state == State.Created ||
+                state == State.Payed ||
+                state == State.DepositFrozen,
+            "cannot cancel: improper state"
+        );
 
         returnFullDeposit();
         returnFreezeFee();
@@ -137,7 +156,7 @@ contract Escrow is Initializable  {
             payable(buyer).transfer(forTransfer);
         }
     }
- 
+
     function returnOverpayment() internal {
         uint forTransfer = deposit;
         if (!payedToSeller) {

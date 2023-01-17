@@ -1,4 +1,5 @@
 https://codeforgeek.com/solidity-on-vs-code/
 https://docs.openzeppelin.com/learn/developing-smart-contracts
+https://hardhat.org/hardhat-runner/docs/guides/project-setup
 https://docs.openzeppelin.com/upgrades-plugins/1.x/
 https://docs.openzeppelin.com/contracts/4.x/api/proxy
