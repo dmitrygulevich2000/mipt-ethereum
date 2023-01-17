@@ -3,31 +3,40 @@ pragma solidity ^0.8.2;
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
 contract Escrow is Initializable  {
+    // Types and events
     enum State {
+        Undefined,
         Created,
         Payed,
         DepositFrozen,
         Completed,
         Cancelled
     }
-    mapping (State => string) stateDescription;
 
     event Payment(address _escrow);
     event Completion(address _escrow);
     event Cancellation(address _escrow);
 
-    State public state = State.Created;
-    uint public deposit = 0;
-    uint public freezeFee = 0;
-    bool payedToSeller = false;
+    // Constants
+    uint8 public constant overpaymentPercent = 5;
+    uint8 public constant freezeFeePercent = 2;
+
+    // State variables. Check initialize() function to see initial values.
+    mapping (State => string) stateDescription;
 
     address public buyer;
     address public seller;
     uint public cost;
     string public description;
 
-    uint8 public constant overpaymentPercent = 5;
-    uint8 public constant freezeFeePercent = 1;
+    uint public deposit;
+    uint public freezeFee;
+    State public state;
+    bool payedToSeller;
+
+    constructor() {
+        _disableInitializers();
+    }
 
     function initialize(address _buyer, address _seller, uint _costEther, string calldata _description) public initializer {
         stateDescription[State.Created] = "deal created";
@@ -40,6 +49,11 @@ contract Escrow is Initializable  {
         seller = _seller;
         cost = _costEther * 1 ether;
         description = _description;
+
+        deposit = 0;
+        freezeFee = 0;
+        state = State.Created;
+        payedToSeller = false;
     }
 
     function getState() external view returns (string memory) {
@@ -84,7 +98,7 @@ contract Escrow is Initializable  {
 
     function cancel() external {
         require(msg.sender == seller || (msg.sender == buyer && state != State.DepositFrozen), "not seller, not buyer, or deposit is frozen");
-        require(state != State.Completed && state != State.Cancelled, "cannot cancel: escrow completed or cancelled");
+        require(state == State.Created || state == State.Payed || state == State.DepositFrozen, "cannot cancel: improper state");
 
         returnFullDeposit();
         returnFreezeFee();
