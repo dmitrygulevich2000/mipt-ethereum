@@ -20,7 +20,7 @@ async function main() {
         seller
     );
 
-    console.log(`Escrow proxy created at ${proxy}`);
+    console.log(`Escrow proxy created at ${proxy.address}`);
 }
 
 main().catch((error) => {

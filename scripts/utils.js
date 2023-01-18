@@ -32,7 +32,9 @@ async function newEscrow(factoryAddress, { buyer, seller, costEther, description
     const txReceipt = await txResponse.wait();
     const createdEvent = txReceipt.events.find(event => event.event == 'Created');
 
-    return createdEvent.args.escrowProxy;
+    const proxy = await ethers.getContractAt("Escrow", createdEvent.args.escrowProxy, signer);
+    
+    return proxy;
 }
 
 module.exports = { deployImplementation, deployFactory, newEscrow }
