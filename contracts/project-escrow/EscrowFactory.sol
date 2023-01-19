@@ -15,7 +15,7 @@ contract EscrowFactory is UpgradeableBeacon {
         address _seller,
         uint _cost,
         string memory _description
-    ) public {
+    ) public returns(address) {
         BeaconProxy escrowProxy = new BeaconProxy(
             address(this),
             abi.encodeWithSignature(
@@ -26,6 +26,8 @@ contract EscrowFactory is UpgradeableBeacon {
                 _description
             )
         );
+
         emit Created(address(escrowProxy));
+        return address(escrowProxy);
     }
 }

@@ -46,9 +46,7 @@ contract Escrow is Initializable {
     ) public initializer {
         stateDescription[State.Created] = "deal created";
         stateDescription[State.Payed] = "deposit made";
-        stateDescription[
-            State.DepositFrozen
-        ] = "seller confirmed delivery, deposit frozen";
+        stateDescription[State.DepositFrozen] = "deposit frozen";
         stateDescription[State.Completed] = "deal completed";
         stateDescription[State.Cancelled] = "deal cancelled";
 
